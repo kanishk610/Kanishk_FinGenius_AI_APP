@@ -121,6 +121,7 @@ logoutBtn.addEventListener('click', () => {
     clearInterval(scamAlertInterval); // Stop scam alerts on logout
 });
 
+
 // Show Dashboard
 function showDashboard() {
     moduleContainers.forEach(container => container.classList.remove('active'));
@@ -739,5 +740,331 @@ upiPaymentForm.addEventListener('submit', (e) => {
     }, 3000); // Simulate 3-second payment processing
 });
 
+// --- Financial Goals Module Logic ---
+const goalsListDiv = document.getElementById('goalsList');
+const goalsLoading = document.getElementById('goalsLoading');
 
+function addFinancialGoal() {
+    const goalName = document.getElementById('goalName').value.trim();
+    const goalTargetAmount = parseFloat(document.getElementById('goalTargetAmount').value);
+    const goalTargetDate = document.getElementById('goalTargetDate').value;
+
+    if (!goalName || isNaN(goalTargetAmount) || goalTargetAmount <= 0 || !goalTargetDate) {
+        showToast('Please fill in all goal details correctly.', 'error');
+        return;
+    }
+
+    const targetDateObj = new Date(goalTargetDate);
+    const today = new Date();
+    const timeDiff = targetDateObj.getTime() - today.getTime();
+    const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    const monthsRemaining = Math.ceil(daysRemaining / 30.44); // Average days in a month
+
+    if (daysRemaining <= 0) {
+        showToast('Target date must be in the future.', 'error');
+        return;
+    }
+
+    const currentSaved = Math.min(userFinancialData.savings + userFinancialData.investments, goalTargetAmount); // Simulate current progress
+    const progressPercentage = (currentSaved / goalTargetAmount) * 100;
+
+    financialGoals.push({
+        id: Date.now(),
+        name: goalName,
+        targetAmount: goalTargetAmount,
+        targetDate: goalTargetDate,
+        currentSaved: currentSaved,
+        progressPercentage: progressPercentage,
+        daysRemaining: daysRemaining,
+        monthsRemaining: monthsRemaining
+    });
+
+    document.getElementById('goalName').value = '';
+    document.getElementById('goalTargetAmount').value = '';
+    document.getElementById('goalTargetDate').value = '';
+
+    renderFinancialGoals();
+    showToast('Financial goal added successfully!', 'success');
+}
+
+function renderFinancialGoals() {
+    goalsListDiv.innerHTML = '';
+    if (financialGoals.length === 0) {
+        goalsListDiv.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.5);">No financial goals set yet.</p>';
+        return;
+    }
+
+    financialGoals.forEach(goal => {
+        const goalItem = document.createElement('div');
+        goalItem.classList.add('goal-item', 'glass-card');
+
+        const monthlySavingsNeeded = (goal.targetAmount - goal.currentSaved) / goal.monthsRemaining;
+        let advice = '';
+        if (monthlySavingsNeeded > 0) {
+            advice = `<p>To reach this goal, you need to save/invest approximately ₹${monthlySavingsNeeded.toLocaleString('en-IN', { maximumFractionDigits: 0 })} per month.</p>`;
+            if (monthlySavingsNeeded > userFinancialData.savings / 2) { // If it's a large portion of current savings
+                advice += `<p style="color: #fa709a;"><strong>AI Tip:</strong> This requires significant monthly contribution. Consider reviewing your budget or exploring higher-return investments (with caution).</p>`;
+            } else {
+                advice += `<p style="color: #4facfe;"><strong>AI Tip:</strong> This goal seems achievable with consistent effort. Keep tracking your progress!</p>`;
+            }
+        } else {
+            advice = `<p style="color: #4facfe;"><strong>AI Tip:</strong> You have already reached or exceeded this goal! Great job!</p>`;
+        }
+
+
+        goalItem.innerHTML = `
+                    <h4>${goal.name}</h4>
+                    <p>Target: ₹${goal.targetAmount.toLocaleString('en-IN')}</p>
+                    <p>Saved: ₹${goal.currentSaved.toLocaleString('en-IN')}</p>
+                    <p>Target Date: ${new Date(goal.targetDate).toLocaleDateString('en-IN')}</p>
+                    <p>Days Remaining: ${goal.daysRemaining}</p>
+                    <div class="goal-progress-bar">
+                        <div class="goal-progress" style="width: ${goal.progressPercentage.toFixed(2)}%;"></div>
+                    </div>
+                    <p style="margin-top: 5px; font-size: 0.9rem; color: rgba(255,255,255,0.7);">Progress: ${goal.progressPercentage.toFixed(2)}%</p>
+                    <div class="goal-advice" style="margin-top: 15px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        ${advice}
+                    </div>
+                    <div class="goal-actions">
+                        <button class="btn" style="background: var(--danger-gradient);" onclick="deleteFinancialGoal(${goal.id})">Delete Goal</button>
+                    </div>
+                `;
+        goalsListDiv.appendChild(goalItem);
+    });
+}
+
+function deleteFinancialGoal(id) {
+    financialGoals = financialGoals.filter(goal => goal.id !== id);
+    renderFinancialGoals();
+    showToast('Financial goal deleted.', 'info');
+}
+
+// --- Scam Alert Module Logic (Enhanced with periodic alerts) ---
+const scamListDiv = document.getElementById('scamList');
+const scamSearchInput = document.getElementById('scamSearchInput');
+const reportScamBtn = document.getElementById('reportScamBtn');
+const reportScamModal = document.getElementById('reportScamModal');
+const reportScamForm = document.getElementById('reportScamForm');
+
+let scamAlertInterval;
+
+function startSimulatedScamAlerts() {
+    // Clear any existing interval to prevent duplicates
+    if (scamAlertInterval) {
+        clearInterval(scamAlertInterval);
+    }
+
+    scamAlertInterval = setInterval(() => {
+        const randomScam = currentScams[Math.floor(Math.random() * currentScams.length)];
+        showToast(`🚨 Scam Alert: ${randomScam.title}! Be careful.`, 'error');
+    }, 60000); // Every 1 minute (60000 ms)
+}
+
+function renderScamList(scamsToRender) {
+    scamListDiv.innerHTML = '';
+    if (scamsToRender.length === 0) {
+        scamListDiv.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.5);">No scams found matching your criteria.</p>';
+        return;
+    }
+    scamsToRender.forEach(scam => {
+        const scamItem = document.createElement('div');
+        scamItem.classList.add('scam-item');
+        if (scam.critical) {
+            scamItem.classList.add('critical');
+        }
+        scamItem.innerHTML = `
+                    <h4>${scam.title}</h4>
+                    <p><strong>Warning:</strong> ${scam.warning}</p>
+                    <p><strong>Red Flags:</strong> ${scam.redFlags}</p>
+                    <p><strong>Tip:</strong> ${scam.tip}</p>
+                `;
+        scamListDiv.appendChild(scamItem);
+    });
+}
+
+function filterScams() {
+    const searchTerm = scamSearchInput.value.toLowerCase();
+    const filteredScams = currentScams.filter(scam =>
+        scam.title.toLowerCase().includes(searchTerm) ||
+        scam.warning.toLowerCase().includes(searchTerm) ||
+        scam.redFlags.toLowerCase().includes(searchTerm) ||
+        scam.tip.toLowerCase().includes(searchTerm)
+    );
+    renderScamList(filteredScams);
+    showToast(`Filtered scams for "${searchTerm}"`, 'info');
+}
+
+reportScamBtn.addEventListener('click', () => {
+    openModal('reportScamModal');
+});
+
+reportScamForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const newScam = {
+        title: document.getElementById('scamTitle').value,
+        warning: document.getElementById('scamWarning').value,
+        redFlags: document.getElementById('scamRedFlags').value,
+        tip: document.getElementById('scamTip').value,
+        critical: false // New scams default to non-critical
+    };
+    currentScams.push(newScam);
+    userFinancialData.scamsReported++; // Update dashboard stat
+    updateDashboardStats();
+    renderScamList(currentScams); // Re-render with new scam
+    closeModal('reportScamModal');
+    reportScamForm.reset();
+    showToast('Thank you for reporting the scam! It has been added to our list.', 'success');
+});
+
+// --- Digital Vault Logic (Enhanced with Categories) ---
+const vaultUploadArea = document.getElementById('vaultUploadArea');
+const vaultFileInput = document.getElementById('vaultFileInput');
+const vaultFilesList = document.getElementById('vaultFilesList');
+const vaultSecurityStatus = document.getElementById('vaultSecurityStatus');
+const vaultFileCategorySelect = document.getElementById('vaultFileCategory');
+
+// Simulate file storage (in a real app, this would be server-side)
+let uploadedFiles = [];
+
+function getFileThumbnail(file) {
+    if (file.type.startsWith('image/')) {
+        return URL.createObjectURL(file);
+    } else if (file.type === 'application/pdf') {
+        return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/PDF_file_icon.svg/1200px-PDF_file_icon.svg.png'; // Generic PDF icon
+    } else if (file.type.includes('word')) {
+        return 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Microsoft_Office_Word_%282019%E2%80%93present%29.svg/1200px-Microsoft_Office_Word_%282019%E2%80%93present%29.svg.png'; // Generic Word icon
+    }
+    return 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Document_icon_-_Noun_Project.svg/1200px-Document_icon_-_Noun_Project.svg.png'; // Generic document icon
+}
+
+function renderVaultFiles() {
+    vaultFilesList.innerHTML = ''; // Clear existing list
+    if (uploadedFiles.length === 0) {
+        vaultFilesList.innerHTML = '<p style="text-align: center; color: rgba(255,255,255,0.5);">No files uploaded yet.</p>';
+        return;
+    }
+
+    uploadedFiles.forEach((file, index) => {
+        const fileDiv = document.createElement('div');
+        fileDiv.classList.add('vault-file');
+        fileDiv.innerHTML = `
+                    <div class="vault-file-info" style="display: flex; align-items: center; gap: 10px;">
+                        <img src="${getFileThumbnail(file.file)}" alt="File thumbnail" style="width: 40px; height: 40px; object-fit: contain; border-radius: 5px; border: 1px solid rgba(255,255,255,0.2);">
+                        <span style="flex-grow: 1;">${file.name}</span>
+                    </div>
+                    <span class="vault-file-category" style="background: rgba(255,255,255,0.1); padding: 5px 10px; border-radius: 5px; font-size: 0.85rem; color: rgba(255,255,255,0.7);">${file.category}</span>
+                    <div class="file-actions">
+                        <button class="download-btn" data-index="${index}">Download</button>
+                        <button class="delete-btn" data-index="${index}">Delete</button>
+                    </div>
+                `;
+        vaultFilesList.appendChild(fileDiv);
+    });
+
+    // Add event listeners for new buttons
+    document.querySelectorAll('.download-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const index = parseInt(e.target.dataset.index);
+            const file = uploadedFiles[index].file;
+            const url = URL.createObjectURL(file);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = file.name;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast(`Downloading ${file.name}...`, 'info');
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const index = parseInt(e.target.dataset.index);
+            const fileName = uploadedFiles[index].name;
+            uploadedFiles.splice(index, 1);
+            userFinancialData.vaultDocs--; // Update dashboard stat
+            updateDashboardStats();
+            renderVaultFiles();
+            showToast(`${fileName} deleted successfully.`, 'success');
+        });
+    });
+}
+
+// Handle file input click
+vaultUploadArea.addEventListener('click', (e) => {
+    // Only trigger file input if the click is not on the category select
+    if (e.target !== vaultFileCategorySelect && !vaultFileCategorySelect.contains(e.target)) {
+        vaultFileInput.click();
+    }
+});
+
+// Handle file selection
+vaultFileInput.addEventListener('change', (e) => {
+    const files = Array.from(e.target.files);
+    const selectedCategory = vaultFileCategorySelect.value;
+
+    if (files.length > 0) {
+        files.forEach(file => {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showToast(`File "${file.name}" is too large (max 5MB).`, 'error');
+                return;
+            }
+            if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'].includes(file.type)) {
+                showToast(`File "${file.name}" has an unsupported type.`, 'error');
+                return;
+            }
+
+            uploadedFiles.push({ file: file, name: file.name, category: selectedCategory });
+            userFinancialData.vaultDocs++; // Update dashboard stat
+        });
+        updateDashboardStats();
+        renderVaultFiles();
+        showToast(`${files.length} file(s) uploaded successfully to ${selectedCategory} category.`, 'success');
+    }
+});
+
+// Handle drag and drop
+vaultUploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    vaultUploadArea.style.borderColor = '#667eea';
+    vaultUploadArea.style.background = 'rgba(102, 126, 234, 0.1)';
+});
+
+vaultUploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    vaultUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+    vaultUploadArea.style.background = 'rgba(255, 255, 255, 0.05)';
+});
+
+vaultUploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    vaultUploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+    vaultUploadArea.style.background = 'rgba(255, 255, 255, 0.05)';
+
+    const files = Array.from(e.dataTransfer.files);
+    const selectedCategory = vaultFileCategorySelect.value;
+
+    if (files.length > 0) {
+        files.forEach(file => {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showToast(`File "${file.name}" is too large (max 5MB).`, 'error');
+                return;
+            }
+            if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'].includes(file.type)) {
+                showToast(`File "${file.name}" has an unsupported type.`, 'error');
+                return;
+            }
+
+            uploadedFiles.push({ file: file, name: file.name, category: selectedCategory });
+            userFinancialData.vaultDocs++; // Update dashboard stat
+        });
+        updateDashboardStats();
+        renderVaultFiles();
+        showToast(`${files.length} file(s) uploaded successfully to ${selectedCategory} category.`, 'success');
+    }
+});
+
+// Initial render for vault files (if any were pre-loaded)
+renderVaultFiles();
 
