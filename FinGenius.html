@@ -1,12 +1,16 @@
+<!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinGenius - AI Financial Literacy Platform</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
-
+<!-- Chart.js for data visualization -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- PWA Manifest -->
+<link href="/manifest.json" rel="manifest"/>
 <link rel="stylesheet" href="FinGenius.css">
-
 
 </head>
 <body>
@@ -35,5 +39,329 @@
 <p>🚀 Demo Mode: Use any 12-digit number (e.g., 123456789012)</p>
 </div>
 </form>
-
 </div>
+<!-- Dashboard -->
+<div class="dashboard" id="dashboard">
+<div class="dashboard-header glass-card">
+<div class="welcome-text">Welcome back, <span id="userName"></span>! 🎉</div>
+<p class="dashboard-subtitle">Choose a module to accelerate your financial journey</p>
+<button class="logout-btn" id="logoutBtn">🚪 Logout</button>
+<div class="stats-grid">
+<div class="stat-card glass-card">
+<div class="stat-value">₹<span id="dashboardSavings">0</span></div>
+<div class="stat-label">Total Savings</div>
+</div>
+<div class="stat-card glass-card">
+<div class="stat-value">₹<span id="dashboardInvestments">0</span></div>
+<div class="stat-label">Total Investments</div>
+</div>
+<div class="stat-card glass-card">
+<div class="stat-value"><span id="dashboardVaultDocs">0</span></div>
+<div class="stat-label">Vault Documents</div>
+</div>
+<div class="stat-card glass-card">
+<div class="stat-value"><span id="dashboardScamsReported">0</span></div>
+<div class="stat-label">Scams Reported</div>
+</div>
+</div>
+</div>
+<div class="modules-grid">
+<div class="module-card glass-card interactive-element" data-module="chatbot">
+<span class="icon">🤖</span>
+<h3>AI Chatbot</h3>
+<p>Get instant financial advice and answers to your money-related questions in Hindi, English, or Hinglish with our advanced AI assistant.</p>
+</div>
+<div class="module-card glass-card interactive-element" data-module="expenseAnalyzer">
+<span class="icon">📊</span>
+<h3>Expense Analyzer</h3>
+<p>Smartly analyze your daily spending by pasting SMS/UPI transaction messages.</p>
+</div>
+<div class="module-card glass-card interactive-element" data-module="budgeting">
+<span class="icon">📈</span>
+<h3>Smart Budgeting</h3>
+<p>Track your expenses, set intelligent budgets, and get personalized suggestions to optimize your financial health.</p>
+</div>
+<div class="module-card glass-card interactive-element" data-module="investment">
+<span class="icon">💰</span>
+<h3>Micro-Investing</h3>
+<p>Discover micro-investment opportunities tailored to your budget and risk tolerance with AI-powered recommendations, starting from ₹10/day.</p>
+</div>
+<div class="module-card glass-card interactive-element" data-module="goals">
+<span class="icon">🎯</span>
+<h3>Financial Goals</h3>
+<p>Set, track, and achieve your financial aspirations with personalized plans and progress monitoring.</p>
+</div>
+<div class="module-card glass-card interactive-element" data-module="scam">
+<span class="icon">🚨</span>
+<h3>Scam Shield</h3>
+<p>Stay protected from financial frauds with real-time alerts, awareness tips, and the latest scam detection technology.</p>
+</div>
+<div class="module-card glass-card interactive-element" data-module="vault">
+<span class="icon">🔐</span>
+<h3>Digital Vault</h3>
+<p>Securely store your important financial documents with military-grade encryption and instant access.</p>
+</div>
+</div>
+</div>
+<!-- Chatbot Module -->
+<div class="module-container glass-card" id="chatbotModule">
+<div class="module-header">
+<h2>🤖 AI Financial Assistant</h2>
+<button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+</div>
+<div class="chatbot-container" id="chatContainer">
+<div class="chat-message bot-message">
+<strong>FinGenius AI:</strong> Namaste! Main aapka financial assistant hun. Aap mujhse koi bhi paisa related sawal puch sakte hain - budgeting, investment, loans, ya koi aur financial advice. Aap Hindi, English, ya Hinglish mein baat kar sakte hain. Kaise madad kar sakta hun?
+                </div>
+</div>
+<div class="loading" id="chatLoading">AI is thinking...</div>
+<div class="chat-input-container">
+<input class="chat-input" id="chatInput" placeholder="Type your financial question in Hindi/English/Hinglish..." type="text"/>
+<button class="voice-btn" id="voiceInputBtn"><span class="material-icons">🎤</span></button>
+<button class="send-btn" id="sendBtn" onclick="sendMessage()">Send</button>
+</div>
+<div class="suggested-questions" style="margin-top: 20px; display: flex; flex-wrap: wrap; gap: 10px;">
+<button class="btn" data-question="How can I save money effectively?" style="width: auto; padding: 10px 15px; font-size: 0.9rem; background: rgba(255,255,255,0.1);">How to save money?</button>
+<button class="btn" data-question="What are good micro-investment options?" style="width: auto; padding: 10px 15px; font-size: 0.9rem; background: rgba(255,255,255,0.1);">Micro-investments?</button>
+<button class="btn" data-question="How to identify a financial scam?" style="width: auto; padding: 10px 15px; font-size: 0.9rem; background: rgba(255,255,255,0.1);">Scam identification?</button>
+</div>
+</div>
+<!-- Expense Analyzer Module -->
+<div class="module-container glass-card" id="expenseAnalyzerModule">
+<div class="module-header">
+<h2>📊 Smart Expense Analyzer</h2>
+<button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+</div>
+<div class="expense-input-area">
+<div class="form-group">
+<label for="transactionMessages">Paste your SMS/UPI transaction messages here:</label>
+<textarea id="transactionMessages" placeholder="e.g., 'You spent Rs. 500 at BigBazaar on 20/07/2023. UPI Ref: 1234567890' or 'Debit of Rs. 150 from your A/C for Zomato. Txn ID: ABCDEF'" rows="8"></textarea>
+</div>
+<button class="btn" onclick="analyzeExpenses()">Analyze Transactions</button>
+</div>
+<div class="loading" id="expenseLoading" style="display: none;">Analyzing your expenses...</div>
+<div class="expense-summary glass-card" id="expenseSummary" style="display: none;">
+<h3>Expense Summary</h3>
+<div id="expenseList">
+<!-- Parsed expenses will be listed here -->
+</div>
+<p style="margin-top: 15px; font-weight: 600;">Total Expenses: ₹<span id="totalAnalyzedExpenses">0</span></p>
+<p style="margin-top: 10px; font-style: italic; color: rgba(255,255,255,0.7);">
+<small>Note: This is a simulated parsing. For real-world use, secure API integration would be required.</small>
+</p>
+</div>
+</div>
+<!-- Budgeting Module -->
+<div class="module-container glass-card" id="budgetingModule">
+<div class="module-header">
+<h2>📈 Smart Budgeting Tool</h2>
+<button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+</div>
+<div class="budget-form">
+<div class="form-group">
+<label for="monthlyIncome">Monthly Income (₹)</label>
+<input id="monthlyIncome" placeholder="Enter your monthly income" type="number"/>
+</div>
+<div id="expenseInputs">
+<!-- Dynamic expense inputs will be added here -->
+<div class="form-group">
+<label for="rentExpense">Rent (₹)</label>
+<input id="rentExpense" placeholder="Monthly rent" type="number"/>
+</div>
+<div class="form-group">
+<label for="foodExpense">Food &amp; Groceries (₹)</label>
+<input id="foodExpense" placeholder="Monthly food expense" type="number"/>
+</div>
+<div class="form-group">
+<label for="transportExpense">Transportation (₹)</label>
+<input id="transportExpense" placeholder="Monthly transport cost" type="number"/>
+</div>
+<div class="form-group">
+<label for="utilitiesExpense">Utilities (₹)</label>
+<input id="utilitiesExpense" placeholder="Electricity, water, etc." type="number"/>
+</div>
+<div class="form-group">
+<label for="entertainmentExpense">Entertainment (₹)</label>
+<input id="entertainmentExpense" placeholder="Movies, dining, etc." type="number"/>
+</div>
+</div>
+<button class="btn" id="addExpenseBtn" style="background: var(--secondary-gradient); width: auto; margin-top: 10px;">+ Add Custom Expense</button>
+</div>
+<button class="btn" id="budgetBtn" onclick="generateBudget()">Generate Budget Analysis</button>
+<div class="loading" id="budgetLoading">Analyzing your budget...</div>
+<div class="budget-chart" id="budgetChart">
+<canvas id="budgetChartCanvas"></canvas>
+</div>
+<div class="glass-card" id="budgetAdvice" style="margin-top: 20px; padding: 20px;"></div>
+</div>
+<!-- Investment Module -->
+<div class="module-container glass-card" id="investmentModule">
+<div class="module-header">
+<h2>💰 Micro-Investing Genius</h2>
+<button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+</div>
+<div class="investment-form">
+<div class="form-group">
+<label for="dailyInvestmentAmount">Daily Investment Amount (₹)</label>
+<input id="dailyInvestmentAmount" min="10" placeholder="e.g., 10 (min ₹10)" type="number" value="10"/>
+</div>
+<div class="form-group">
+<label for="riskLevel">Risk Tolerance</label>
+<select id="riskLevel">
+<option value="low">Low Risk (Safe investments)</option>
+<option value="medium">Medium Risk (Balanced)</option>
+<option value="high">High Risk (Growth focused)</option>
+</select>
+</div>
+<div class="form-group">
+<label for="investmentGoal">Investment Goal</label>
+<select id="investmentGoal">
+<option value="emergency">Emergency Fund</option>
+<option value="retirement">Retirement Planning</option>
+<option value="education">Education</option>
+<option value="home">Home Purchase</option>
+</select>
+</div>
+</div>
+<button class="btn" onclick="generateInvestmentSuggestions()">Get Investment Suggestions</button>
+<div class="glass-card" id="investmentResult" style="margin-top: 20px; padding: 20px;"></div>
+<div class="investment-chart-container" style="margin-top: 20px;">
+<canvas id="investmentGrowthChart"></canvas>
+</div>
+<button class="btn" id="investNowBtn" style="background: var(--success-gradient); margin-top: 20px; display: none;">Invest Now via UPI</button>
+</div>
+<!-- Financial Goals Module -->
+<div class="module-container glass-card" id="goalsModule">
+<div class="module-header">
+<h2>🎯 Financial Goals</h2>
+<button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+</div>
+<div class="goal-form">
+<div class="form-group">
+<label for="goalName">Goal Name</label>
+<input id="goalName" placeholder="e.g., New Car Down Payment" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="goalTargetAmount">Target Amount (₹)</label>
+<input id="goalTargetAmount" placeholder="e.g., 500000" required="" type="number"/>
+</div>
+<div class="form-group">
+<label for="goalTargetDate">Target Date</label>
+<input id="goalTargetDate" required="" type="date"/>
+</div>
+<button class="btn" onclick="addFinancialGoal()">Add New Goal</button>
+</div>
+<div class="loading" id="goalsLoading" style="display: none;">Calculating goal progress...</div>
+<div class="goals-list" id="goalsList">
+<p style="text-align: center; color: rgba(255,255,255,0.5);">No financial goals set yet.</p>
+</div>
+</div>
+<!-- Scam Alert Module -->
+<div class="module-container glass-card" id="scamModule">
+<div class="module-header">
+<h2>🚨 Scam Shield &amp; Fraud Protection</h2>
+<button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+</div>
+<div class="scam-filter-search" style="display: flex; gap: 10px; margin-bottom: 20px;">
+<input class="form-group" id="scamSearchInput" placeholder="Search for scam types..." type="text"/>
+<button class="btn" onclick="filterScams()" style="width: auto; padding: 10px 20px; background: rgba(255,255,255,0.1);">Search</button>
+</div>
+<div class="scam-list" id="scamList">
+<!-- Scam items will be dynamically loaded here -->
+</div>
+<div class="glass-card" style="margin-top: 30px; padding: 25px; border: 1px solid rgba(79, 172, 254, 0.3);">
+<h3>Fraud Protection Tips from Verified Sources</h3>
+<ul style="list-style-type: disc; margin-left: 20px; color: rgba(255,255,255,0.8);">
+<li style="margin-bottom: 10px;">**RBI (Reserve Bank of India):** Never share your OTP, CVV, PIN, or password with anyone. RBI or banks never ask for this information.</li>
+<li style="margin-bottom: 10px;">**SEBI (Securities and Exchange Board of India):** Be wary of unsolicited investment advice or schemes promising abnormally high returns. Always verify with SEBI-registered intermediaries.</li>
+<li style="margin-bottom: 10px;">**Cybercrime.gov.in:** Report any suspicious financial activity or cyber fraud immediately on the National Cybercrime Reporting Portal.</li>
+<li>**Your Bank:** Regularly check your bank statements for unauthorized transactions. Use official bank apps and websites for all transactions.</li>
+</ul>
+</div>
+<button class="btn" id="reportScamBtn" style="background: var(--secondary-gradient); margin-top: 20px; width: auto;">Report a New Scam</button>
+</div>
+<!-- Digital Vault Module -->
+<div class="module-container glass-card" id="vaultModule">
+<div class="module-header">
+<h2>🔐 Encrypted Digital Vault</h2>
+<button class="back-btn" onclick="showDashboard()">← Back to Dashboard</button>
+</div>
+<div class="vault-upload glass-card" id="vaultUploadArea">
+<p style="color: rgba(255,255,255,0.8);">Drag &amp; Drop your financial documents here or Click to Upload</p>
+<input accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" id="vaultFileInput" multiple="" style="display: none;" type="file"/>
+<div class="form-group" style="margin-top: 20px;">
+<label for="vaultFileCategory">Document Category</label>
+<select id="vaultFileCategory">
+<option value="Other">Other</option>
+<option value="Aadhaar">Aadhaar Card</option>
+<option value="PAN">PAN Card</option>
+<option value="Bank Statement">Bank Statement</option>
+<option value="Investment Proof">Investment Proof</option>
+<option value="Insurance Policy">Insurance Policy</option>
+</select>
+</div>
+</div>
+<div class="vault-files" id="vaultFilesList">
+<p style="text-align: center; color: rgba(255,255,255,0.5);">No files uploaded yet.</p>
+</div>
+<div class="vault-security-indicator" style="margin-top: 20px; text-align: center; font-size: 0.9rem; color: rgba(255,255,255,0.7);">
+                Your vault is <span id="vaultSecurityStatus" style="font-weight: 600; color: #4facfe;">Highly Secure</span> with end-to-end encryption (simulated).
+            </div>
+</div>
+</div>
+<!-- Toast Container -->
+<div id="toast-container"></div>
+<!-- Modals -->
+<!-- Report Scam Modal -->
+<div class="modal-overlay" id="reportScamModal">
+<div class="modal-content">
+<button class="modal-close-btn" onclick="closeModal('reportScamModal')">×</button>
+<h3>Report a New Scam</h3>
+<form id="reportScamForm">
+<div class="form-group">
+<label for="scamTitle">Scam Title</label>
+<input id="scamTitle" placeholder="e.g., Fake Lottery Call" required="" type="text"/>
+</div>
+<div class="form-group">
+<label for="scamWarning">Warning</label>
+<textarea id="scamWarning" placeholder="e.g., Callers promise large sums of money" required="" rows="3"></textarea>
+</div>
+<div class="form-group">
+<label for="scamRedFlags">Red Flags</label>
+<textarea id="scamRedFlags" placeholder="e.g., Ask for upfront fees, urgent action" required="" rows="3"></textarea>
+</div>
+<div class="form-group">
+<label for="scamTip">Safety Tip</label>
+<textarea id="scamTip" placeholder="e.g., Never pay upfront fees for lottery winnings" required="" rows="2"></textarea>
+</div>
+<button class="btn" type="submit">Submit Scam Report</button>
+</form>
+</div>
+</div>
+<!-- UPI Payment Modal -->
+<div class="modal-overlay" id="upiPaymentModal">
+<div class="modal-content">
+<button class="modal-close-btn" onclick="closeModal('upiPaymentModal')">×</button>
+<img alt="UPI Logo" class="upi-logo" src="https://upload.wikimedia.org/wikipedia/commons/e/e1/UPI-Logo-Vector.svg"/>
+<h3>Complete UPI Payment</h3>
+<form id="upiPaymentForm">
+<div class="form-group">
+<label for="upiAmount">Amount (₹)</label>
+<input id="upiAmount" readonly="" type="number"/>
+</div>
+<div class="form-group">
+<label for="upiId">Your UPI ID</label>
+<input id="upiId" placeholder="e.g., yourname@bankupi" required="" type="text" value="demo@fintech"/>
+</div>
+<button class="btn" id="payUpiBtn" type="submit">Pay Now</button>
+<div class="loading" id="upiLoading" style="display: none;">Processing payment...</div>
+<div class="upi-payment-status" id="upiPaymentStatus"></div>
+</form>
+</div>
+</div>
+
+</body>
+</html>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js.map"></script>
+<script src="FinGenius.js" defer></script>
