@@ -739,6 +739,7 @@
             font-weight: 600;
             transition: all 0.3s ease;
             margin-top: 20px;
+            font-size: 25px;
         }
 
         .logout-btn:hover {
