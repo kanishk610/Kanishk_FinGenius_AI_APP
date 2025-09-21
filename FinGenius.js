@@ -108,6 +108,7 @@ loginFormElement.addEventListener('submit', (e) => {
     }
 });
 
+
 // Logout Logic
 logoutBtn.addEventListener('click', () => {
     loggedInUser = null;
@@ -178,62 +179,83 @@ let chatHistory = [
 
 // Send Message Function
 async function sendMessage() {
-    const userMessageText = chatInput.value.trim();
-    if (userMessageText === '') return;
+  const text = chatInput.value.trim();
+  if (!text) return;
 
-    chatHistory.push({ role: "user", content: userMessageText });
+  const userDiv = document.createElement("div");
+  userDiv.className = "chat-message user-message";
+  userDiv.textContent = text;
+  chatContainer.appendChild(userDiv);
+  chatInput.value = "";
 
-    const userMessageDiv = document.createElement('div');
-    userMessageDiv.classList.add('chat-message', 'user-message');
-    userMessageDiv.textContent = userMessageText;
-    chatContainer.appendChild(userMessageDiv);
-    chatInput.value = '';
-    chatContainer.scrollTop = chatContainer.scrollHeight;
+  chatLoading.style.display = "block";
 
-    chatLoading.classList.add('show');
-    sendBtn.disabled = true;
-    voiceInputBtn.disabled = true;
+  try {
+    const lowercaseText = text.toLowerCase();
 
-    try {
-        try {
-            const response = await fetch(('https://corsproxy.io/?https://api.openai.com/v1/chat/completions'), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`
-                },
-                body: JSON.stringify({
-                    model: "gpt-3.5-turbo",
-                    messages: chatHistory,
-                    max_tokens: 200,
-                    temperature: 0.7
-                })
-            });
+    let reply = "";
 
-            const data = await response.json();
-            const reply = data.choices[0].message.content.trim();
-
-            chatHistory.push({ role: "assistant", content: reply });
-
-            const botMessageDiv = document.createElement('div');
-            botMessageDiv.classList.add('chat-message', 'bot-message');
-            botMessageDiv.innerHTML = `<strong>FinGenius AI:</strong> ${reply}`;
-            chatContainer.appendChild(botMessageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-
-        } catch (err) {
-            chatLoading.classList.remove('show');
-            const errorMsg = document.createElement('div');
-            errorMsg.classList.add('chat-message', 'bot-message');
-            errorMsg.innerHTML = `<strong>FinGenius AI:</strong> API error: ${err.message}`;
-            chatContainer.appendChild(errorMsg);
-            console.error('OpenAI Error:', err);
-        }
-    } finally {
-        chatLoading.classList.remove('show');
-        sendBtn.disabled = false;
-        voiceInputBtn.disabled = false;
+    // 👋 Greet the user if they say hi/hello/etc.
+    if (
+      ["hi", "hello", "hey", "namaste", "yo", "what's up", "salaam", "hola"].some(greet =>
+        lowercaseText.includes(greet)
+      )
+    ) {
+      const greetings = [
+        "👋 Namaste! Kaise madad kar sakta hoon aaj?",
+        "🙏 Hello! Welcome to FinGenius AI. Ask me anything about money.",
+        "😄 Hi there! Budget, investment, ya scam info chahiye?",
+        "🧠 Hello dosto! Aaj kya seekhna hai? 💰"
+      ];
+      reply = greetings[Math.floor(Math.random() * greetings.length)];
     }
+
+    // 🔍 Keyword-based smart replies
+    else if (lowercaseText.includes("sip")) {
+      reply = "📈 SIP yaani Systematic Investment Plan ek aisa method hai jisme aap thoda-thoda paisa regular invest karte ho mutual funds me.";
+    } else if (lowercaseText.includes("save") || lowercaseText.includes("saving")) {
+      reply = "💰 Saving ke liye 50-30-20 rule follow karo: 50% needs, 30% wants, 20% saving.";
+    } else if (lowercaseText.includes("scam") || lowercaseText.includes("fraud")) {
+      reply = "🚨 Scam se bacho! Koi bhi OTP, CVV, PIN ya password mat do. Bank kabhi ye nahi maangta.";
+    } else if (lowercaseText.includes("budget")) {
+      reply = "📝 Budget banate waqt sabse pehle income aur fixed expenses likho. Uske baad variable expenses control karo.";
+    } else if (lowercaseText.includes("invest") || lowercaseText.includes("investment")) {
+      reply = "💹 Investment ke liye apne risk tolerance ke hisaab se mutual funds, FD, ya stocks choose karo.";
+    } else if (lowercaseText.includes("upi")) {
+      reply = "📲 UPI transaction secure hai, lekin unknown links ya requests pe kabhi click mat karo.";
+    } else if (lowercaseText.includes("emergency") || lowercaseText.includes("fund")) {
+      reply = "🔒 Emergency fund me kam se kam 3–6 months ka kharcha hona chahiye. Ye tough time me help karta hai.";
+    } else if (lowercaseText.includes("loan")) {
+      reply = "🏦 Loan lene se pehle uska interest rate aur repayment term dhyan se samjho. Zyada loan burden mat lo.";
+    }
+
+    // 🤷‍♂️ Fallback response
+    else {
+      const genericReplies = [
+        "🤔 Achha sawaal hai! Kripya thoda aur detail me poochho.",
+        "📚 Financial literacy is important. Aapka sawaal bahut sahi jagah aaya hai!",
+        "🙌 Great! Let’s take charge of your financial future together.",
+        "💡 Mujhe lagta hai aapko budgeting se shuru karna chahiye. Want tips?",
+        "🤖 Main aapki madad ke liye yahan hoon. Investment, savings, ya scam ke baare me poochhiye!"
+      ];
+      reply = genericReplies[Math.floor(Math.random() * genericReplies.length)];
+    }
+
+    // 🕐 Simulated AI typing delay
+    setTimeout(() => {
+      const botDiv = document.createElement("div");
+      botDiv.className = "chat-message bot-message";
+      botDiv.innerHTML = `<strong>FinGenius AI:</strong> ${reply}`;
+      chatContainer.appendChild(botDiv);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+      chatLoading.style.display = "none";
+    }, 1000);
+
+  } catch (err) {
+    alert("❌ Chat simulation failed.");
+    console.error("Chatbot error:", err);
+    chatLoading.style.display = "none";
+  }
 }
 
 // Event Listeners
