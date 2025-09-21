@@ -1,1 +1,1 @@
-# HackOrbit_Fintech_Innovation_CyberPunk
+# Kanishk_FinGenius_AI_APP
