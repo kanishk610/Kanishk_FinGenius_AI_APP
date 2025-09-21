@@ -5,16 +5,19 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>FinGenius - AI Financial Literacy Platform</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
 <!-- Chart.js for data visualization -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- PWA Manifest -->
-<link href="/manifest.json" rel="manifest"/>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#4facfe">
 <link rel="stylesheet" href="FinGenius.css">
 
 </head>
 <body>
-<!-- Floating Particles -->
+</button>
 <div class="particles" id="particles"></div>
 <div class="container">
 <div class="header">
@@ -28,6 +31,7 @@
 <div class="form-group">
 <label for="aadhaar">Aadhaar Number</label>
 <input id="aadhaar" maxlength="12" name="aadhaar" placeholder="Enter your 12-digit Aadhaar number" required="" type="text"/>
+
 </div>
 <div class="form-group">
 <label for="name">Full Name</label>
@@ -40,6 +44,8 @@
 </div>
 </form>
 </div>
+<div id="recaptcha-container"></div>
+
 
 <!-- Dashboard -->
 <div class="dashboard" id="dashboard">
@@ -363,6 +369,7 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/particles.js/2.0.0/particles.min.js.map"></script>
+
 <script src="FinGenius.js" defer></script>
 </body>
 </html>
