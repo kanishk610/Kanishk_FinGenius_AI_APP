@@ -138,5 +138,9 @@ app.post("/api/upi-payment", (req, res) => {
   }, 2000);
 });
 
+// Start server
+app.listen(PORT, () => {
+  console.log(`✅ Server running at http://localhost:${PORT}/FinGenius.html`);
+});
 
 
