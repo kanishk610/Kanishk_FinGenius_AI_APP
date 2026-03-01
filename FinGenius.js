@@ -1067,5 +1067,26 @@ vaultUploadArea.addEventListener('drop', (e) => {
     const files = Array.from(e.dataTransfer.files);
     const selectedCategory = vaultFileCategorySelect.value;
 
-   ;
+    if (files.length > 0) {
+        files.forEach(file => {
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showToast(`File "${file.name}" is too large (max 5MB).`, 'error');
+                return;
+            }
+            if (!['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'image/jpeg', 'image/png'].includes(file.type)) {
+                showToast(`File "${file.name}" has an unsupported type.`, 'error');
+                return;
+            }
+
+            uploadedFiles.push({ file: file, name: file.name, category: selectedCategory });
+            userFinancialData.vaultDocs++; // Update dashboard stat
+        });
+        updateDashboardStats();
+        renderVaultFiles();
+        showToast(`${files.length} file(s) uploaded successfully to ${selectedCategory} category.`, 'success');
+    }
+});
+
+// Initial render for vault files (if any were pre-loaded)
+renderVaultFiles()
 
